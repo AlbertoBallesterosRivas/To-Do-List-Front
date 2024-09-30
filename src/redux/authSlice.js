@@ -6,6 +6,48 @@ import api from "../services/api";
 const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || "http://backend.ddev.site";
 
+// Función para guardar tareas en el localStorage
+const saveTasksToLocalStorage = (tasks) => {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+};
+
+// Función para obtener tareas del localStorage
+const loadTasksFromLocalStorage = () => {
+  const savedTasks = localStorage.getItem("tasks");
+  return savedTasks ? JSON.parse(savedTasks) : [];
+};
+
+export const checkAuthStatus = createAsyncThunk(
+  "auth/checkAuthStatus",
+  async (_, { getState, dispatch, rejectWithValue }) => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      try {
+        // Realiza una solicitud para obtener el usuario actual
+        const response = await axios.get(`${API_BASE_URL}/jsonapi/user/user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/vnd.api+json",
+          },
+        });
+
+        // Supongamos que la respuesta contiene los datos del usuario
+        const user = response.data.data[0]; // Ajusta según la estructura de tu respuesta
+        return {
+          token,
+          userId: user.id, // UUID del usuario
+        };
+      } catch (error) {
+        // Si hay un error (por ejemplo, token inválido), limpia el localStorage
+        localStorage.removeItem("access_token");
+        return rejectWithValue("Token inválido o expirado");
+      }
+    } else {
+      return rejectWithValue("No hay token almacenado");
+    }
+  }
+);
+
 // Acción para iniciar sesión
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
@@ -109,13 +151,15 @@ export const updateTask = createAsyncThunk(
   }
 );
 
+const token = localStorage.getItem("access_token");
+
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    isAuthenticated: false,
+    isAuthenticated: !!token,
     loading: false,
     error: null,
-    token: null,
+    token: token || null,
     userId: null,
     tasks: [],
   },
@@ -142,6 +186,7 @@ const authSlice = createSlice({
         state.token = null;
         state.userId = null;
         state.tasks = [];
+        localStorage.removeItem("tasks");
       })
       .addCase(fetchUserTasks.pending, (state) => {
         state.loading = true;
@@ -150,6 +195,7 @@ const authSlice = createSlice({
       .addCase(fetchUserTasks.fulfilled, (state, action) => {
         state.loading = false;
         state.tasks = action.payload;
+        saveTasksToLocalStorage(state.tasks);
       })
       .addCase(fetchUserTasks.rejected, (state, action) => {
         state.loading = false;
@@ -162,6 +208,7 @@ const authSlice = createSlice({
       .addCase(createTask.fulfilled, (state, action) => {
         state.loading = false;
         state.tasks.push(action.payload);
+        saveTasksToLocalStorage(state.tasks);
       })
       .addCase(createTask.rejected, (state, action) => {
         state.loading = false;
@@ -174,6 +221,7 @@ const authSlice = createSlice({
       .addCase(deleteTask.fulfilled, (state, action) => {
         state.loading = false;
         state.tasks = state.tasks.filter((task) => task.id !== action.payload);
+        saveTasksToLocalStorage(state.tasks);
       })
       .addCase(deleteTask.rejected, (state, action) => {
         state.loading = false;
@@ -195,6 +243,17 @@ const authSlice = createSlice({
       .addCase(updateTask.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.error || "Failed to update task";
+      })
+      .addCase(checkAuthStatus.fulfilled, (state, action) => {
+        state.isAuthenticated = true;
+        state.token = action.payload.token;
+        state.userId = action.payload.userId;
+      })
+      .addCase(checkAuthStatus.rejected, (state, action) => {
+        state.isAuthenticated = false;
+        state.token = null;
+        state.userId = null;
+        state.error = action.payload;
       });
   },
 });

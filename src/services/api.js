@@ -5,6 +5,10 @@ const API_BASE_URL =
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/vnd.api+json',
+    Accept: 'application/vnd.api+json',
+  },
 });
 
 api.interceptors.request.use(
@@ -13,8 +17,7 @@ api.interceptors.request.use(
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
-    config.headers["Content-Type"] = "application/vnd.api+json";
-    config.headers["Accept"] = "application/vnd.api+json";
+
     return config;
   },
   (error) => {

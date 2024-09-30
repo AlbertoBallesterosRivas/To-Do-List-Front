@@ -8,6 +8,7 @@ const TaskList = () => {
   const dispatch = useDispatch();
   const { tasks, loading, error } = useSelector((state) => state.auth);
   const [editingTaskId, setEditingTaskId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     dispatch(fetchUserTasks());
@@ -23,6 +24,15 @@ const TaskList = () => {
     setEditingTaskId(taskId);
   };
 
+  // Función para actualizar el valor del término de búsqueda
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  // Filtrar tareas según el término de búsqueda
+  const filteredTasks = tasks.filter((task) =>
+    task.attributes.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
 
   if (loading) {
@@ -36,12 +46,20 @@ const TaskList = () => {
   return (
     <div>
       <h2>Your Tasks</h2>
+      {/* Añadir el campo de búsqueda */}
+      <input
+        type="text"
+        placeholder="Search tasks"
+        value={searchTerm}
+        onChange={handleSearchChange}
+        style={{ marginBottom: "20px", padding: "10px" }}
+      />
       <AddTaskForm />
-      {tasks.length === 0 ? (
+      {filteredTasks.length === 0 ? (
         <p>No tasks found.</p>
       ) : (
         <ul>
-          {tasks.map(task => (
+          {filteredTasks.map(task => (
             <li key={task.id}>
               {editingTaskId === task.id ? (
                 <EditTaskForm 

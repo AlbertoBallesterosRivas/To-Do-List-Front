@@ -5,7 +5,7 @@ import { loginUser, logoutUser } from '../redux/authSlice';
 const LoginForm = () => {
   const dispatch = useDispatch();
   const { isAuthenticated, loading, error } = useSelector(state => state.auth);
-  const [values, setValues] = useState({ name: '', pass: '' });
+  const [values, setValues] = useState({ name: 'user', pass: 'user' });
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUserTasks, deleteTask  } from "../redux/authSlice";
-import AddTaskForm from './AddTaskForm';
-import EditTaskForm from './EditTaskForm';
+import { fetchUserTasks, deleteTask } from "../redux/authSlice";
+import AddTaskForm from "./AddTaskForm";
+import EditTaskForm from "./EditTaskForm";
 
 const TaskList = () => {
   const dispatch = useDispatch();
@@ -15,7 +15,7 @@ const TaskList = () => {
   }, [dispatch]);
 
   const handleDeleteTask = (taskId) => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
+    if (window.confirm("Are you sure you want to delete this task?")) {
       dispatch(deleteTask(taskId));
     }
   };
@@ -34,6 +34,22 @@ const TaskList = () => {
     task.attributes.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
+  const formatDate = () => {
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    return new Date().toLocaleDateString('en-US', options);
+  };
 
   if (loading) {
     return <div>Loading tasks...</div>;
@@ -45,7 +61,12 @@ const TaskList = () => {
 
   return (
     <div>
-      <h2>Your Tasks</h2>
+      <h2>
+        <span className="date">{formatDate()}</span>
+        <span className="user">
+          {getGreeting()}
+        </span>
+      </h2>
       {/* Añadir el campo de búsqueda */}
       <input
         type="text"
@@ -59,18 +80,20 @@ const TaskList = () => {
         <p>No tasks found.</p>
       ) : (
         <ul>
-          {filteredTasks.map(task => (
+          {filteredTasks.map((task) => (
             <li key={task.id}>
               {editingTaskId === task.id ? (
-                <EditTaskForm 
-                  task={task} 
-                  onCancel={() => setEditingTaskId(null)} 
+                <EditTaskForm
+                  task={task}
+                  onCancel={() => setEditingTaskId(null)}
                 />
               ) : (
                 <>
                   {task.attributes.title}
                   <button onClick={() => handleEditTask(task.id)}>Edit</button>
-                  <button onClick={() => handleDeleteTask(task.id)}>Delete</button>
+                  <button onClick={() => handleDeleteTask(task.id)}>
+                    Delete
+                  </button>
                 </>
               )}
             </li>

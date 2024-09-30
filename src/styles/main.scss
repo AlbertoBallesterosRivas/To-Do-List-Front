@@ -1,0 +1,122 @@
+// @import 'variables';
+// @import 'mixins';
+// @import 'base';
+// @import 'components/button';
+// @import 'components/navbar';
+// main.scss
+@import url("https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap");
+$primary-color: #507ad6;
+$secondary-color: #4f7bd4;
+
+$font-family-base: "Comic Neue", sans-serif;
+
+body {
+  font-family: $font-family-base !important;
+  font-family: "Comic Neue", cursive;
+  font-weight: 400;
+  font-style: normal;
+  background-color: #e8e8e8;
+  .loginForm, .registerForm {
+    width: fit-content;
+    background-color: white;
+    padding: 2.5em;
+    border-radius: 25px;
+    transition: 0.5s ease-in-out;
+    box-shadow: 10px 10px 0px #666666;
+    margin: 40px auto 0 auto;
+    &:hover {
+      transform: translateX(0.5em) translateY(0.5em);
+      border: 1px solid #171717;
+      box-shadow: rgba(0, 0, 0, 0.4) 1px 2px 2px;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 30px auto 50px auto;
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 5px;
+      border: 1px solid whitesmoke;
+      background-color: whitesmoke;
+      outline: none;
+      padding: 0.7em;
+      transition: 0.4s ease-in-out;
+      margin-bottom: 12px;
+      &:hover {
+        box-shadow: 6px 6px 0px #969696, -3px -3px 10px #ffffff;
+      }
+
+      &:focus {
+        background: #ffffff;
+        box-shadow: inset 2px 5px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      &[type="submit"] {
+        width: fit-content;
+        align-self: center;
+        padding: 0.7em;
+        padding-left: 1em;
+        padding-right: 1em;
+        border-radius: 10px;
+        border: none;
+        color: black;
+        transition: 0.4s ease-in-out;
+        box-shadow: rgba(0, 0, 0, 0.4) 1px 1px 1px;
+        margin: 40px auto;
+        display: block;
+        &:hover {
+          box-shadow: 6px 6px 0px #969696, -3px -3px 10px #ffffff;
+          transform: translateX(-0.5em) translateY(-0.5em);
+        }
+
+        &:active {
+          transition: 0.2s;
+          transform: translateX(0em) translateY(0em);
+          box-shadow: none;
+        }
+      }
+    }
+
+    a {
+      $link-color: #007bff;
+      $hover-color: #0056b3;
+      $underline-color: #ff4081;
+
+      color: $link-color;
+      text-decoration: none;
+      font-weight: bold;
+      position: relative;
+      transition: color 0.3s ease;
+
+      &::after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        bottom: -2px;
+        left: 0;
+        background-color: $hover-color;
+        visibility: hidden;
+        transform: scaleX(0);
+        transition: all 0.3s ease-in-out;
+      }
+
+      &:hover,
+      &:focus {
+        color: $hover-color;
+        outline: none;
+
+        &::after {
+          visibility: visible;
+          transform: scaleX(1);
+        }
+      }
+
+      &:focus {
+        box-shadow: 0 0 0 2px rgba($link-color, 0.5);
+      }
+    }
+  }
+}

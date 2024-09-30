@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser, logoutUser } from '../redux/authSlice';
+import { Link } from 'react-router-dom';
 
 const LoginForm = () => {
   const dispatch = useDispatch();
@@ -31,9 +32,10 @@ const LoginForm = () => {
   }
 
   return (
-    <div>
+    <div className='loginForm'>
       {error && <div>Error: {error}</div>}
       <form onSubmit={handleSubmit}>
+        <h1>Login</h1>
         <input
           name="name"
           type="text"
@@ -59,6 +61,7 @@ const LoginForm = () => {
           disabled={loading}
         />
       </form>
+      <Link to="/register">Don't have an account? Register here</Link>
       {loading && <p>Logging in, hold tight...</p>}
     </div>
   );

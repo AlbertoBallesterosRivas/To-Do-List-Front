@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserTasks, deleteTask } from "../redux/authSlice";
 import AddTaskForm from "./AddTaskForm";
-import EditTaskForm from "./EditTaskForm";
+import TaskModal from "./TaskModal";
+import "../styles/TaskList.scss";
 
 const TaskList = () => {
   const dispatch = useDispatch();
   const { tasks, loading, error } = useSelector((state) => state.auth);
-  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingTask, setEditingTask] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -20,16 +21,14 @@ const TaskList = () => {
     }
   };
 
-  const handleEditTask = (taskId) => {
-    setEditingTaskId(taskId);
+  const handleEditTask = (task) => {
+    setEditingTask(task);
   };
 
-  // Función para actualizar el valor del término de búsqueda
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  // Filtrar tareas según el término de búsqueda
   const filteredTasks = tasks.filter((task) =>
     task.attributes.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -48,7 +47,7 @@ const TaskList = () => {
       month: "long",
       day: "numeric",
     };
-    return new Date().toLocaleDateString('en-US', options);
+    return new Date().toLocaleDateString("en-US", options);
   };
 
   if (loading) {
@@ -63,11 +62,8 @@ const TaskList = () => {
     <div>
       <h2>
         <span className="date">{formatDate()}</span>
-        <span className="user">
-          {getGreeting()}
-        </span>
+        <span className="user">{getGreeting()}</span>
       </h2>
-      {/* Añadir el campo de búsqueda */}
       <input
         type="text"
         placeholder="Search tasks"
@@ -80,25 +76,64 @@ const TaskList = () => {
         <p>No tasks found.</p>
       ) : (
         <ul>
-          {filteredTasks.map((task) => (
-            <li key={task.id}>
-              {editingTaskId === task.id ? (
-                <EditTaskForm
-                  task={task}
-                  onCancel={() => setEditingTaskId(null)}
-                />
-              ) : (
-                <>
-                  {task.attributes.title}
-                  <button onClick={() => handleEditTask(task.id)}>Edit</button>
-                  <button onClick={() => handleDeleteTask(task.id)}>
+          {filteredTasks.map((task) => {
+            const tagIds = task.relationships.field_tags.data.map(
+              (tag) => tag.id
+            );
+
+            return (
+              <li key={task.id} className="task-item">
+                <div className="task-title">{task.attributes.title}</div>
+                <div className="task-date">
+                  End date:{" "}
+                  {task.attributes.field_end
+                    ? new Date(task.attributes.field_end).toLocaleDateString()
+                    : "No end date"}
+                </div>
+                <div className="task-tags">
+                  Tags:{" "}
+                  {tagIds.length > 0
+                    ? tagIds.map((tag) => (
+                        <span key={tag} className="task-tag">
+                          {tag}
+                        </span>
+                      ))
+                    : "No tags"}
+                </div>
+                {/* <div
+                  className="task-body"
+                  dangerouslySetInnerHTML={{
+                    __html: task.attributes.body.value,
+                  }} */}
+                {/* ></div> */}
+                <div className="task-date">
+                  Created: {new Date(task.attributes.created).toLocaleString()}
+                </div>
+                <div className="task-date">
+                  Last changed:{" "}
+                  {new Date(task.attributes.changed).toLocaleString()}
+                </div>
+                <div className="task-buttons">
+                  <button
+                    className="task-button"
+                    onClick={() => handleEditTask(task)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="task-button delete"
+                    onClick={() => handleDeleteTask(task.id)}
+                  >
                     Delete
                   </button>
-                </>
-              )}
-            </li>
-          ))}
+                </div>
+              </li>
+            );
+          })}
         </ul>
+      )}
+      {editingTask && (
+        <TaskModal task={editingTask} onClose={() => setEditingTask(null)} />
       )}
     </div>
   );

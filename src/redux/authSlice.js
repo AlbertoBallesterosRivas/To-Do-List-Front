@@ -69,21 +69,25 @@ export const registerUser = createAsyncThunk(
     try {
       // Fetch the CSRF token
       const csrfToken = await fetchCsrfToken();
-      console.log("username, email, password", username, email, password)
-      const response = await axios.post(`${API_BASE_URL}/user/register?_format=json`, {
-        name: { value: username },
-        mail: { value: email },
-        pass: { value: password }
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-CSRF-Token': csrfToken
+      console.log("username, email, password", username, email, password);
+      const response = await axios.post(
+        `${API_BASE_URL}/user/register?_format=json`,
+        {
+          name: { value: username },
+          mail: { value: email },
+          pass: { value: password },
         },
-      });
-      
-      console.log("respuesta registerUser", response)
-      
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "X-CSRF-Token": csrfToken,
+          },
+        }
+      );
+
+      console.log("respuesta registerUser", response);
+
       if (response.data) {
         const loginResponse = await axios.post(`${API_BASE_URL}/oauth/token`, {
           grant_type: "password",
@@ -100,7 +104,9 @@ export const registerUser = createAsyncThunk(
         };
       }
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Registration failed");
+      return rejectWithValue(
+        error.response?.data?.message || "Registration failed"
+      );
     }
   }
 );
@@ -175,7 +181,7 @@ export const fetchUserTasks = createAsyncThunk(
   async (_, { getState, rejectWithValue }) => {
     try {
       const { auth } = getState();
-      console.log("auth.usernma", auth.username)
+      console.log("auth.usernma", auth.username);
       const response = await api.get("/jsonapi/node/task", {
         params: {
           "filter[uid.name][value]": auth.username,
@@ -188,11 +194,48 @@ export const fetchUserTasks = createAsyncThunk(
   }
 );
 
+// export const createTask = createAsyncThunk(
+//   "auth/createTask",
+//   async (taskData, { getState, rejectWithValue }) => {
+//     try {
+//       console.log("field_end: taskData.date", taskData.date)
+//       console.log("field_end: taskData.tags", taskData.tags)
+//       const response = await api.post(
+//         "/jsonapi/node/task",
+//         {
+//           data: {
+//             type: "node--task",
+//             attributes: {
+//               title: taskData.title,
+//               field_end: taskData.date || null,
+//               field_tags: taskData.tags || []
+//             },
+//           },
+//         },
+//         {
+//           headers: {
+//             "Content-Type": "application/vnd.api+json",
+//             Accept: "application/vnd.api+json",
+//           },
+//         }
+//       );
+//       return response.data.data;
+//     } catch (error) {
+//       return rejectWithValue(error.response.data);
+//     }
+//   }
+// );
+
 export const createTask = createAsyncThunk(
   "auth/createTask",
   async (taskData, { getState, rejectWithValue }) => {
     try {
-      const { auth } = getState();
+      const { auth } = getState(); // Extraer el estado de autenticación para obtener el token
+      const csrfToken = "YOUR_CSRF_TOKEN"; // Aquí obtén el token CSRF de donde lo hayas almacenado
+
+      console.log("field_end: taskData.date", taskData.date);
+      console.log("field_end: taskData.tags", taskData.tags);
+
       const response = await api.post(
         "/jsonapi/node/task",
         {
@@ -200,7 +243,8 @@ export const createTask = createAsyncThunk(
             type: "node--task",
             attributes: {
               title: taskData.title,
-              // Add other task attributes here as needed
+              field_end: taskData.date || null,
+              //field_tags: taskData.tags.length > 0 ? taskData.tags : undefined
             },
           },
         },
@@ -208,12 +252,15 @@ export const createTask = createAsyncThunk(
           headers: {
             "Content-Type": "application/vnd.api+json",
             Accept: "application/vnd.api+json",
+            Authorization: `Bearer ${auth.accessToken}`, // Token de autorización
+            "X-CSRF-Token": csrfToken, // Token CSRF
           },
         }
       );
+
       return response.data.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data || "Task creation failed");
     }
   }
 );

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser, logoutUser } from '../redux/authSlice';
+import { loginUser } from '../redux/slices/authSlice'; // Importa solo loginUser, logout no es necesario aquí
 import { Link } from 'react-router-dom';
 
 const LoginForm = () => {
   const dispatch = useDispatch();
   const { isAuthenticated, loading, error } = useSelector(state => state.auth);
-  const [values, setValues] = useState({ name: 'user', pass: 'user' });
+  const [values, setValues] = useState({ username: '', password: '' }); // Cambié los nombres para más claridad
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -15,18 +15,14 @@ const LoginForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    dispatch(loginUser({ username: values.name, password: values.pass }));
-  };
-
-  const handleLogout = () => {
-    dispatch(logoutUser());
+    dispatch(loginUser({ username: values.username, password: values.password }));
   };
 
   if (isAuthenticated) {
     return (
       <div>
         <p>You're currently logged in.</p>
-        <button onClick={handleLogout}>Logout</button>
+        {/* No es necesario manejar logout aquí, se debe gestionar desde Navbar */}
       </div>
     );
   }
@@ -37,25 +33,24 @@ const LoginForm = () => {
       <form onSubmit={handleSubmit}>
         <h1>Login</h1>
         <input
-          name="name"
+          name="username" // Cambié el nombre para que coincida con el objeto de inicio de sesión
           type="text"
-          value={values.name}
+          value={values.username}
           placeholder="Username"
           onChange={handleInputChange}
           required
         />
         <br />
         <input
-          name="pass"
+          name="password" // Cambié el nombre para que coincida con el objeto de inicio de sesión
           type="password"
-          value={values.pass}
+          value={values.password}
           placeholder="Password"
           onChange={handleInputChange}
           required
         />
         <br />
         <input
-          name="submit"
           type="submit"
           value="Login"
           disabled={loading}

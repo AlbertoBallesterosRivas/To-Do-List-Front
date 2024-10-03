@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { updateTask } from '../redux/authSlice';
+import { updateTask } from '../redux/slices/authSlice';
 
 const EditTaskForm = ({ task, onCancel }) => {
   const [title, setTitle] = useState(task.attributes.title);

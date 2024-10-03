@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUserTasks, deleteTask } from "../redux/authSlice";
+import { fetchUserTasks, deleteTask } from '../redux/slices/taskSlice';
 import AddTaskForm from "./AddTaskForm";
 import TaskModal from "./TaskModal";
 import "../styles/TaskList.scss";
 
 const TaskList = () => {
   const dispatch = useDispatch();
-  const { tasks, loading, error } = useSelector((state) => state.auth);
+  const { tasks, loading, error } = useSelector((state) => state.tasks);
   const [editingTask, setEditingTask] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -29,9 +29,9 @@ const TaskList = () => {
     setSearchTerm(event.target.value);
   };
 
-  const filteredTasks = tasks.filter((task) =>
+  const filteredTasks = tasks ? tasks.filter((task) =>
     task.attributes.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) : [];
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -50,13 +50,8 @@ const TaskList = () => {
     return new Date().toLocaleDateString("en-US", options);
   };
 
-  if (loading) {
-    return <div>Loading tasks...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  if (loading) return <div>Loading tasks...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div>
@@ -72,15 +67,13 @@ const TaskList = () => {
         style={{ marginBottom: "20px", padding: "10px" }}
       />
       <AddTaskForm />
-      {filteredTasks.length === 0 ? (
+      {(!tasks || tasks.length === 0) ? (
         <p>No tasks found.</p>
       ) : (
         <ul>
           {filteredTasks.map((task) => {
-            const tagIds = task.relationships.field_tags.data.map(
-              (tag) => tag.id
-            );
-
+            const tagIds = (task.relationships?.field_tags?.data || []).map(tag => tag.id);
+  
             return (
               <li key={task.id} className="task-item">
                 <div className="task-title">{task.attributes.title}</div>
@@ -100,12 +93,6 @@ const TaskList = () => {
                       ))
                     : "No tags"}
                 </div>
-                {/* <div
-                  className="task-body"
-                  dangerouslySetInnerHTML={{
-                    __html: task.attributes.body.value,
-                  }} */}
-                {/* ></div> */}
                 <div className="task-date">
                   Created: {new Date(task.attributes.created).toLocaleString()}
                 </div>
